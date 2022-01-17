@@ -43,52 +43,53 @@ public class Solution {
                     board[2][2] = 'X';
                     break;
             }
-            display(board);
-
-            int hasWon = hasWon(board);
-            if(hasWon == 10){
-                System.out.println("X WON");
-                break;
-            }
-            else if(hasWon==-10){
-                System.out.println("O WON");
-                break;
-            }
-            if(isDraw(board)){
-                System.out.println("GAME DRAQ");
-                break;
-            }
-
+            if(display(board)) break;
             Move m = bestMove(board);
             board[m.i][m.j] = opponent;
-            display(board);
-
+            if(display(board)) break;
         }
 
     }
 
-    static void display(char[][] board){
+    static boolean display(char[][] board){
+        System.out.print("\033[H\033[2J");  
         System.out.flush();
+        
         for(int i=0;i<3;i++){
             for(int j=0;j<3;j++){
                 System.out.print(board[i][j]+"  ");
             }
-            System.out.println();
+            System.out.println("\n");
         }
+        
+        int hasWon = hasWon(board);
+        if(hasWon == 10){
+            System.out.println("X WON");
+            return true;
+        }
+        else if(hasWon==-10){
+            System.out.println("O WON");
+            return true;
+        }
+        if(isDraw(board)){
+            System.out.println("GAME DRAW");
+            return true;
+        }
+        return false;
 
     }
 
 
     static Move bestMove(char[][] board){
         Move m = new Move(-1,-1);
-        int score = Integer.MIN_VALUE;
+        int score = Integer.MAX_VALUE;
         for(int i=0;i<3;i++){
             for(int j=0;j<3;j++){
                 if(board[i][j]=='_'){
                     board[i][j] = opponent;
-                    int value = miniMax(board,0,false);
+                    int value = miniMax(board,0,true);
                     board[i][j] = '_';
-                    if(value>score){
+                    if(value<score){
                         score = value;
                         m.i = i;
                         m.j = j;
@@ -101,21 +102,21 @@ public class Solution {
 
     }
 
-    static int miniMax(char[][] board, int depth, boolean isMaximize){
+    static int miniMax(char[][] board, int depth, boolean isMaximizing){
 
         int score = hasWon(board);
-        if(score==10) return score;
-        if(score==-10) return score;
+        if(score==10) return score-depth;
+        if(score==-10) return score+depth;
         if(isDraw(board)) return 0;
 
-        if(isMaximize){
+        if(isMaximizing){
 
             int best = Integer.MIN_VALUE;
             for(int i=0; i<3; i++){
                 for(int j=0;j<3;j++){
                     if(board[i][j]=='_'){
                         board[i][j] = player;
-                        best = Math.max(best,miniMax(board,depth+1,!isMaximize));
+                        best = Math.max(best,miniMax(board,depth+1,!isMaximizing));
                         board[i][j] = '_';
                     }
                 }
@@ -129,7 +130,7 @@ public class Solution {
                 for(int j =0;j<3;j++){
                     if(board[i][j] == '_'){
                         board[i][j] = opponent;
-                        best = Math.min(best,miniMax(board,depth+1,!isMaximize));
+                        best = Math.min(best,miniMax(board,depth+1,!isMaximizing));
                         board[i][j] = '_';
                     }
                 }
@@ -145,9 +146,7 @@ public class Solution {
                 if(board[i][j]=='_') return false;
             }
         }
-        int score = hasWon(board);
-        if(score == 0) return true;
-        return false;
+        return true;
     }
 
     static int hasWon(char[][] board){
@@ -167,7 +166,7 @@ public class Solution {
             if (board[0][i] == board[1][i] && board[0][i] == board[2][i]) {
 
                 if (board[0][i] == player) return 10;
-                else if (board[i][0] == opponent) return -10;
+                else if (board[0][i] == opponent) return -10;
 
             }
         }
